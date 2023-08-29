@@ -22,8 +22,6 @@
 // todo 
 // flush eeprom command
 // simplify - clear help command, delete rt tx...  - just jam, raw
-// EEPROM.length() preprogrammed valeus
-
 
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 #include <avr/pgmspace.h>
@@ -1068,7 +1066,7 @@ static void exec(char *cmdline)
         //start saving recording buffer content into EEPROM non-volatile memory 
         Serial.print(F("\r\nSaving recording buffer content into the non-volatile memory...\r\n"));
         
-        for (setting=0; setting<EPROMSIZE ; setting++)  
+        for (setting=0; setting<EEPROM.length(); setting++)  
            {  // copying byte after byte from SRAM to EEPROM
             EEPROM.write(setting, bigrecordingbuffer[setting] );
            }
@@ -1084,7 +1082,7 @@ static void exec(char *cmdline)
         //start loading EEPROM non-volatile memory content into recording buffer
         Serial.print(F("\r\nLoading content from the non-volatile memory into the recording buffer...\r\n"));
         
-        for (setting=0; setting<EPROMSIZE ; setting++)  
+        for (setting=0; setting<EEPROM.length(); setting++)  
            { // copying byte after byte from EEPROM to SRAM 
             bigrecordingbuffer[setting] = EEPROM.read(setting);
            }
