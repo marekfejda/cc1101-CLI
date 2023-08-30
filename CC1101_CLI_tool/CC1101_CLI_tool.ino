@@ -1086,9 +1086,16 @@ static void exec(char *cmdline)
             bigrecordingbuffer[setting] = EEPROM.read(setting);
            }
         Serial.print(F("\r\nLoading complete. Enter 'show' or 'showraw' to see the buffer content.\r\n\r\n"));
-                  
 
-
+    // handling EEPROM_FLUSH command
+    } else if (strcmp_P(command, PSTR("save")) == 0) {
+        //flush saved content in EEPROM non-volatile memory 
+        Serial.print(F("\r\nFlushing recording buffer content into the non-volatile memory...\r\n"));
+        for (setting=0; setting<EEPROM.length(); setting++)  
+           {  
+            EEPROM.write(setting,0);
+           }
+        Serial.print(F("\r\nFlushing complete.\r\n\r\n"));
        
     // Handling ECHO command         
     } else if (strcmp_P(command, PSTR("echo")) == 0) {
