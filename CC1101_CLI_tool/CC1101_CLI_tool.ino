@@ -29,7 +29,6 @@
 
 #define CCBUFFERSIZE 64
 #define RECORDINGBUFFERSIZE 1536   // Buffer for recording the frames
-#define EPROMSIZE 1024             // Size of EEPROM in your Arduino chip
 #define BUF_LENGTH 128             // Buffer for the incoming command.
 
 // Following section enables SmartRC CC1101 library 
