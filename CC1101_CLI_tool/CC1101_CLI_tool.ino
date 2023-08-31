@@ -219,6 +219,7 @@ static void exec(char *cmdline)
           "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
           "x : Immediately stops jamming/receiving/recording packets.\r\n\r\n"
           "reset : Restarts CC1101 board with default parameters\r\n\r\n"
+          "----------------------------------------------------------------------------------------------------------------------\r\r"
          ));
 
     // Handling SETMODULATION command 
@@ -809,10 +810,10 @@ static void exec(char *cmdline)
         Serial.print(F("Error: Unknown command: "));
         Serial.println(command);
         //  debug only
-        // asciitohex(command, (byte *)textbuffer,  strlen(command));
-        // Serial.print(F("\r\n"));
-        // Serial.print((char *)textbuffer);
-        // Serial.print(F("\r\n"));
+//         asciitohex(command, (byte *)textbuffer,  strlen(command));
+//         Serial.print(F("\r\n"));
+//         Serial.print((char *)textbuffer);
+//         Serial.print(F("\r\n"));
     }
 }
 
@@ -823,26 +824,22 @@ void setup() {
      Serial.begin(115200);
 
      while (!Serial) {
-        ; // wait until USB CDC port connects... Needed for Leonardo only
+        ;
                      }
-     Serial.println(F("CC1101 terminal tool connected, use 'help' for list of commands...\n\r"));
+     Serial.println(F("CC1101 terminal tool connected, use 'help' for list of all commands...\n\r"));
      Serial.println(F("Marek Fejda 2023\n\r  "));
+     Serial.println();
 
-     Serial.println();  // print CRLF
+     pinMode(RXLED, OUTPUT);
 
-     // Arduino Pro Micro - RXLED diode will be used for debug blinking
-     pinMode(RXLED, OUTPUT);  // Set RX LED as an output
-
-     // initialize CC1101 module with preffered parameters
      cc1101initialize();
 
-      if (ELECHOUSE_cc1101.getCC1101()) {  // Check the CC1101 Spi connection.
-      Serial.println(F("cc1101 initialized. Connection OK\n\r"));
+      if (ELECHOUSE_cc1101.getCC1101()) { 
+        Serial.println(F("cc1101 initialized. Connection OK\n\r"));
       } else {
-      Serial.println(F("cc1101 connection error! check the wiring.\n\r"));
+        Serial.println(F("cc1101 connection error! check the wiring.\n\r"));
       };    
     
-     // setup variables
      bigrecordingbufferpos = 0;
 }
 
@@ -945,18 +942,13 @@ void loop() {
 
       };   // end of Check receive flag if
 
-      // if jamming mode activate continously send something over RF...
       if ( jammingmode == 1)
       { 
-        // populate cc1101 sending buffer with random values
         randomSeed(analogRead(0));
         for (i = 0; i<60; i++)
            { ccsendingbuffer[i] = (byte)random(255);  };        
-        // blink LED RX - only for Arduino Pro Micro
-        digitalWrite(RXLED, LOW);   // set the RX LED ON
-        // send these data to radio over CC1101
+        digitalWrite(RXLED, LOW);
         ELECHOUSE_cc1101.SendData(ccsendingbuffer,60);
-        // blink LED RX - only for Arduino Pro Micro
         digitalWrite(RXLED, HIGH);   // set the RX LED OFF    
       };
  
