@@ -59,8 +59,6 @@ int jammingmode = 0;
 // check if CLI recording mode enabled
 int recordingmode = 0; 
 
-static bool do_echo = true;
-
 // buffer for receiving  CC1101
 byte ccreceivingbuffer[CCBUFFERSIZE] = {0};
 
@@ -229,9 +227,8 @@ static void exec(char *cmdline)
           "save : Store recording buffer content in non-volatile memory\r\n\r\n"
           "load : Load the content from non-volatile memory to the recording buffer\r\n\r\n"
           "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
-          "echo <mode> : Enable or disable Echo on serial terminal. 1 = enabled, 0 = disabled\r\n\r\n"
           "x : Stops jamming/receiving/recording packets.\r\n\r\n"
-          "init : Restarts CC1101 board with default parameters RENAME TO reset\r\n\r\n"
+          "init : Restarts CC1101 board with default parameters\r\n\r\n"
          ));
 
     // Handling SETMODULATION command 
@@ -992,10 +989,6 @@ static void exec(char *cmdline)
             EEPROM.write(setting,0);
            }
         Serial.print(F("\r\nFlushing complete.\r\n\r\n"));
-       
-    // Handling ECHO command         
-    } else if (strcmp_P(command, PSTR("echo")) == 0) {
-        do_echo = atoi(cmdline);
 
     // Handling X command         
     // command 'x' stops jamming, receiveing, recording...
@@ -1071,18 +1064,18 @@ void loop() {
         if (data == '\b' || data == '\177') {  // BS and DEL
             if (length) {
                 length--;
-                if (do_echo) Serial.write("\b \b");
+                Serial.write("\b \b");
             }
         }
         else if (data == '\r' || data == '\n' ) {
-            if (do_echo) Serial.write("\r\n");    // output CRLF
+            Serial.write("\r\n");
             buffer[length] = '\0';
             if (length) exec(buffer);
             length = 0;
         }
         else if (length < BUF_LENGTH - 1) {
             buffer[length++] = data;
-            if (do_echo) Serial.write(data);
+            Serial.write(data);
         }
        };  
       // end of handling CLI processing
