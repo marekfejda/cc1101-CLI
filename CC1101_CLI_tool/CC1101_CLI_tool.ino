@@ -32,10 +32,6 @@
 #define RECORDINGBUFFERSIZE 1536   // Buffer for recording the frames
 #define BUF_LENGTH 128             // Buffer for the incoming command.
 
-// Following section enables SmartRC CC1101 library 
-// to work with Arduino Pro Micro
-// if using different board, please change it to your board assignments
-// defining PINs set for Arduino Pro Micro setup
 byte sck = 15;   
 byte miso = 14;
 byte mosi = 16;
@@ -73,8 +69,6 @@ byte bigrecordingbuffer[RECORDINGBUFFERSIZE] = {0};
 // buffer for hex to ascii conversions 
 byte textbuffer[BUF_LENGTH];
 
-
-
 // convert char table to string with hex numbers
 void asciitohex(byte *ascii_ptr, byte *hex_ptr,int len)
 {
@@ -99,7 +93,6 @@ void asciitohex(byte *ascii_ptr, byte *hex_ptr,int len)
     hex_ptr[(2*i)+2] = '\0' ; 
 }
 
-
 // convert string with hex numbers to array of bytes
 void  hextoascii(byte *ascii_ptr, byte *hex_ptr,int len)
 {
@@ -118,12 +111,10 @@ void  hextoascii(byte *ascii_ptr, byte *hex_ptr,int len)
     ascii_ptr[i++] = '\0' ;
 }
 
-// Initialize CC1101 board with default settings, you may change your preferences here
 static void cc1101initialize(void)
 {
-    // initializing library with custom pins selected
-     ELECHOUSE_cc1101.setSpiPin(sck, miso, mosi, ss);
-     ELECHOUSE_cc1101.setGDO(gdo0, gdo2);
+    ELECHOUSE_cc1101.setSpiPin(sck, miso, mosi, ss);
+    ELECHOUSE_cc1101.setGDO(gdo0, gdo2);
   
     ELECHOUSE_cc1101.Init();                
     ELECHOUSE_cc1101.setGDO0(gdo0);         // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
@@ -153,20 +144,13 @@ static void cc1101initialize(void)
     ELECHOUSE_cc1101.setPQT(0);             // Preamble quality estimator threshold. The preamble quality estimator increases an internal counter by one each time a bit is received that is different from the previous bit, and decreases the counter by 8 each time a bit is received that is the same as the last bit. A threshold of 4∙PQT for this counter is used to gate sync word detection. When PQT=0 a sync word is always accepted.
     ELECHOUSE_cc1101.setAppendStatus(0);    // When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.
 }
-
-
-// Execute a complete CC1101 command.
-
 static void exec(char *cmdline)
-{ 
-        
+{         
     char *command = strsep(&cmdline, " ");
     int setting, setting2, len;
     byte j, k;
     float settingf1;
     float settingf2;
-    
-  // identification of the command & actions
       
     if (strcmp_P(command, PSTR("help")) == 0) {
         Serial.println(F(
@@ -316,8 +300,7 @@ static void exec(char *cmdline)
         Serial.print(F("\r\nlow = "));
         Serial.print(setting2);
         Serial.print(F("\r\n"));  
-
-    
+   
     // Handling SETADRCHK command         
     } else if (strcmp_P(command, PSTR("setadrchk")) == 0) {
         setting = atoi(cmdline);
@@ -430,7 +413,6 @@ static void exec(char *cmdline)
         Serial.print(F(" means 0 = 2 bytes, 1 = 3b, 2 = 4b, 3 = 6b, 4 = 8b, 5 = 12b, 6 = 16b, 7 = 24 bytes\r\n")); 
         Serial.print(F("\r\n")); 
 
-  
     // Handling SETPQT command         
       } else if (strcmp_P(command, PSTR("setpqt")) == 0) {
         setting = atoi(cmdline);
@@ -569,10 +551,7 @@ static void exec(char *cmdline)
         //start replaying GDO0 bit state from data in the buffer with bitbanging 
         Serial.print(F("\r\nReplaying RAW data from the buffer...\r\n"));
         pinMode(gdo0, OUTPUT);
-
-        // blink LED RX - only for Arduino Pro Micro
-        digitalWrite(RXLED, LOW);   // set the RX LED ON
-        
+        digitalWrite(RXLED, LOW);
         for (int i=1; i<RECORDINGBUFFERSIZE ; i++)  
            { 
              byte receivedbyte = bigrecordingbuffer[i];
@@ -582,19 +561,14 @@ static void exec(char *cmdline)
                  delayMicroseconds(setting);                      // delay for selected sampling interval
                }; 
            }
-
-        // blink LED RX - only for Arduino Pro Micro
-        digitalWrite(RXLED, HIGH);   // set the RX LED OFF
-        
+        digitalWrite(RXLED, HIGH);
         Serial.print(F("\r\nReplaying RAW data complete.\r\n\r\n"));
         // setting normal pkt format again
         ELECHOUSE_cc1101.setCCMode(1); 
         ELECHOUSE_cc1101.setPktFormat(0);
         ELECHOUSE_cc1101.SetTx();
-        // pinMode(gdo0pin, INPUT);
         }
         else { Serial.print(F("Wrong parameters.\r\n")); };
-
 
     // handling SHOWRAW command
     } else if (strcmp_P(command, PSTR("showraw")) == 0) {
@@ -673,7 +647,6 @@ static void exec(char *cmdline)
         }
          else { Serial.print(F("Wrong parameters.\r\n")); };
 
-
     // Handling ADD command         
        } else if (strcmp_P(command, PSTR("add")) == 0) {
         // getting hex numbers - the content of the  frame 
@@ -705,8 +678,6 @@ static void exec(char *cmdline)
                    };
         }  
         else { Serial.print(F("Wrong parameters.\r\n")); };
-
-
 
     // Handling SHOW command         
        } else if (strcmp_P(command, PSTR("show")) == 0) {
@@ -773,7 +744,6 @@ static void exec(char *cmdline)
         framesinbigrecordingbuffer = 0;     
         //start loading EEPROM non-volatile memory content into recording buffer
         Serial.print(F("\r\nLoading content from the non-volatile memory into the recording buffer...\r\n"));
-        
         for (setting=0; setting<EEPROM.length(); setting++)  
            { // copying byte after byte from EEPROM to SRAM 
             bigrecordingbuffer[setting] = EEPROM.read(setting);
@@ -791,7 +761,6 @@ static void exec(char *cmdline)
         Serial.print(F("\r\nFlushing complete.\r\n\r\n"));
 
     // Handling X command         
-    // command 'x' stops jamming, receiveing, recording...
     } else if (strcmp_P(command, PSTR("x")) == 0) {
         receivingmode = 0;
         jammingmode = 0;
@@ -799,62 +768,41 @@ static void exec(char *cmdline)
         Serial.print(F("\r\n"));
 
     // Handling RESET command         
-    // command 'init' initializes board with default settings
     } else if (strcmp_P(command, PSTR("reset")) == 0) {
-        // init cc1101
         cc1101initialize();
-        // give feedback
         Serial.print(F("CC1101 initialized\r\n"));
           
     } else {
         Serial.print(F("Error: Unknown command: "));
         Serial.println(command);
-        //  debug only
-//         asciitohex(command, (byte *)textbuffer,  strlen(command));
-//         Serial.print(F("\r\n"));
-//         Serial.print((char *)textbuffer);
-//         Serial.print(F("\r\n"));
     }
 }
 
-
 void setup() {
-
-     // initialize USB Serial Port CDC
      Serial.begin(115200);
-
      while (!Serial) {
         ;
                      }
      Serial.println(F("CC1101 terminal tool connected, use 'help' for list of all commands...\n\r"));
      Serial.println(F("Marek Fejda 2023\n\r  "));
      Serial.println();
-
      pinMode(RXLED, OUTPUT);
-
      cc1101initialize();
-
       if (ELECHOUSE_cc1101.getCC1101()) { 
         Serial.println(F("cc1101 initialized. Connection OK\n\r"));
       } else {
         Serial.println(F("cc1101 connection error! check the wiring.\n\r"));
       };    
-    
      bigrecordingbufferpos = 0;
 }
 
-
 void loop() {
-
   // index for serial port characters
   int i = 0;
-
     /* Process incoming commands. */
     while (Serial.available()) {
         static char buffer[BUF_LENGTH];
         static int length = 0;
-
-    
     // handling CLI commands processing  
         int data = Serial.read();
         if (data == '\b' || data == '\177') {  // BS and DEL
@@ -875,9 +823,8 @@ void loop() {
         }
        };  
       // end of handling CLI processing
-
+      
   /* Process RF received packets */
-   
    //Checks whether something has been received.
   if (ELECHOUSE_cc1101.CheckReceiveFlag() && (receivingmode == 1 || recordingmode == 1) )
       {
@@ -932,14 +879,9 @@ void loop() {
                     bigrecordingbufferpos = 0;
                     recordingmode = 0;
                      };
-                
                };   // end of handling frame recording mode 
- 
           };   // end of CRC check IF
-
-       // blink LED RX - only for Arduino Pro Micro
-       digitalWrite(RXLED, HIGH);   // set the RX LED OFF
-
+       digitalWrite(RXLED, HIGH);
       };   // end of Check receive flag if
 
       if ( jammingmode == 1)
@@ -951,5 +893,4 @@ void loop() {
         ELECHOUSE_cc1101.SendData(ccsendingbuffer,60);
         digitalWrite(RXLED, HIGH);   // set the RX LED OFF    
       };
- 
-}  // end of main LOOP
+}
