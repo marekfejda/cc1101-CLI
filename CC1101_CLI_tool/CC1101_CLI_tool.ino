@@ -20,7 +20,6 @@
 //  d9          -----    8 GDO2/DGO2
 
 // todo 
-// flush eeprom command
 // simplify - clear help command, delete rt tx...  - just jam, raw
 
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
@@ -130,7 +129,7 @@ static void cc1101initialize(void)
      ELECHOUSE_cc1101.setGDO(gdo0, gdo2);
 
     // Main part to tune CC1101 with proper frequency, modulation and encoding    
-    ELECHOUSE_cc1101.Init();                // must be set to initialize the cc1101!
+    ELECHOUSE_cc1101.Init();                
     ELECHOUSE_cc1101.setGDO0(gdo0);         // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
     ELECHOUSE_cc1101.setCCMode(1);          // set config for internal transmission mode. value 0 is for RAW recording/replaying
     ELECHOUSE_cc1101.setModulation(2);      // set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.
@@ -234,6 +233,7 @@ static void exec(char *cmdline)
           "showbit : Showing content of recording buffer in RAW format as a stream of bits.\r\n\r\n"
           "save : Store recording buffer content in non-volatile memory\r\n\r\n"
           "load : Load the content from non-volatile memory to the recording buffer\r\n\r\n"
+          "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
           "echo <mode> : Enable or disable Echo on serial terminal. 1 = enabled, 0 = disabled\r\n\r\n"
           "x : Stops jamming/receiving/recording packets.\r\n\r\n"
           "init : Restarts CC1101 board with default parameters\r\n\r\n"
@@ -1088,9 +1088,9 @@ static void exec(char *cmdline)
         Serial.print(F("\r\nLoading complete. Enter 'show' or 'showraw' to see the buffer content.\r\n\r\n"));
 
     // handling EEPROM_FLUSH command
-    } else if (strcmp_P(command, PSTR("save")) == 0) {
+    } else if (strcmp_P(command, PSTR("eeprom-flush")) == 0) {
         //flush saved content in EEPROM non-volatile memory 
-        Serial.print(F("\r\nFlushing recording buffer content into the non-volatile memory...\r\n"));
+        Serial.print(F("\r\nFlushing EEPROM non-volatile memory content...\r\n"));
         for (setting=0; setting<EEPROM.length(); setting++)  
            {  
             EEPROM.write(setting,0);
@@ -1138,7 +1138,7 @@ void setup() {
         ; // wait until USB CDC port connects... Needed for Leonardo only
                      }
      Serial.println(F("CC1101 terminal tool connected, use 'help' for list of commands...\n\r"));
-     Serial.println(F("(C) Adam Loboda 2023\n\r  "));
+     Serial.println(F("Marek Fejda 2023\n\r  "));
 
      Serial.println();  // print CRLF
 
