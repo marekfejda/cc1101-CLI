@@ -19,9 +19,6 @@
 //  d14         -----    7 MISO/GDO1
 //  d9          -----    8 GDO2/DGO2
 
-// todo 
-// simplify - clear help command, delete rt tx...  - just jam, raw
-
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
@@ -122,8 +119,7 @@ static void cc1101initialize(void)
     // initializing library with custom pins selected
      ELECHOUSE_cc1101.setSpiPin(sck, miso, mosi, ss);
      ELECHOUSE_cc1101.setGDO(gdo0, gdo2);
-
-    // Main part to tune CC1101 with proper frequency, modulation and encoding    
+  
     ELECHOUSE_cc1101.Init();                
     ELECHOUSE_cc1101.setGDO0(gdo0);         // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
     ELECHOUSE_cc1101.setCCMode(1);          // set config for internal transmission mode. value 0 is for RAW recording/replaying
@@ -176,6 +172,7 @@ static void exec(char *cmdline)
       
     if (strcmp_P(command, PSTR("help")) == 0) {
         Serial.println(F(
+          "-------------------------------------------------------SETTINGS-------------------------------------------------------\r\n\r"
           "setmodulation <mode> : Set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.\r\n\r\n"
           "setmhz <frequency>   : Here you can set your basic frequency. default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ.\r\n\r\n"
           "setdeviation <deviation> : Set the Frequency deviation in kHz. Value from 1.58 to 380.85. Default is 47.60 kHz.\r\n\r\n"
@@ -203,9 +200,10 @@ static void exec(char *cmdline)
           "setfec <mode> : Enable Forward Error Correction (FEC) with interleaving for packet payload (Only supported for fixed packet length mode. 0 = Disable. 1 = Enable.\r\n\r\n"
           "setpre <mode> : Sets the minimum number of preamble bytes to be transmitted. Values: 0 : 2, 1 : 3, 2 : 4, 3 : 6, 4 : 8, 5 : 12, 6 : 16, 7 : 24\r\n\r\n"
           "setpqt <mode> : Preamble quality estimator threshold. \r\n\r\n"
-          "setappendstatus <mode> : When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.\r\n\r\n"
-          "getrssi : Display quality information about last received frames over RF\r\n\r\n"
-          "scan <start> <stop> : Scan frequency range for the highest signal.\r\n\r\n"         
+          "setappendstatus <mode> : When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.\r\n\r\n\n"
+          "-------------------------------------------------------COMMANDS-------------------------------------------------------\r\n\r\n"
+          "scan <start> <stop> : Scan frequency range for the highest signal.\r\n\r\n"
+          "getrssi : Display quality information about last received frames over RF\r\n\r"      
          ));
         Serial.println(F(
           "rx : Sniffer. Enable or disable printing of received RF packets on serial terminal.\r\n\r\n"
@@ -228,7 +226,7 @@ static void exec(char *cmdline)
           "load : Load the content from non-volatile memory to the recording buffer\r\n\r\n"
           "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
           "x : Stops jamming/receiving/recording packets.\r\n\r\n"
-          "init : Restarts CC1101 board with default parameters\r\n\r\n"
+          "reset : Restarts CC1101 board with default parameters\r\n\r\n"
          ));
 
     // Handling SETMODULATION command 
@@ -998,9 +996,9 @@ static void exec(char *cmdline)
         recordingmode = 0;
         Serial.print(F("\r\n"));
 
-    // Handling INIT command         
+    // Handling RESET command         
     // command 'init' initializes board with default settings
-    } else if (strcmp_P(command, PSTR("init")) == 0) {
+    } else if (strcmp_P(command, PSTR("reset")) == 0) {
         // init cc1101
         cc1101initialize();
         // give feedback
