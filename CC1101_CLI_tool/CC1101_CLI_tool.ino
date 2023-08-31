@@ -209,8 +209,6 @@ static void exec(char *cmdline)
           "scan <start> <stop> : Scan frequency range for the highest signal.\r\n\r"     
          ));
         Serial.println(F(
-          "rx : Sniffer. Enable or disable printing of received RF packets on serial terminal.\r\n\r\n"
-          "tx <hex-vals> : Send packet of max 60 bytes <hex values> over RF\r\n\r\n"
           "jam : Enable or disable continous jamming on selected band.\r\n\r\n"
           "brute <microseconds> <number-of-bits> : Brute force garage gate with <nb-of-bits> keyword where symbol time is <usec>.\r\n\r\n"
           "rec : Enable or disable recording frames in the buffer.\r\n\r\n"
@@ -457,21 +455,6 @@ static void exec(char *cmdline)
         if (setting == 0) { Serial.print(F("Enabled")); }
         else if (setting == 1) { Serial.print(F("Disabled")); };
         Serial.print(F("\r\n")); 
-
-    // Handling RX command         
-       } else if (strcmp_P(command, PSTR("rx")) == 0) {
-        Serial.print(F("\r\nReceiving and printing RF packet changed to "));
-        if (receivingmode == 1) {
-          receivingmode = 0;
-          Serial.print(F("Disabled")); }
-        else if (receivingmode == 0)
-               { ELECHOUSE_cc1101.SetRx();
-                 Serial.print(F("Enabled")); 
-                 receivingmode = 1;
-                 jammingmode = 0; 
-                 recordingmode = 0;
-               };
-        Serial.print(F("\r\n")); 
         
     // Handling JAM command         
        } else if (strcmp_P(command, PSTR("jam")) == 0) {
@@ -534,33 +517,7 @@ static void exec(char *cmdline)
         
         else { Serial.print(F("Wrong parameters.\r\n")); };
 
- 
-
-    // Handling TX command         
-       } else if (strcmp_P(command, PSTR("tx")) == 0) {
-        // convert hex array to set of bytes
-        if ((strlen(cmdline)<=120) && (strlen(cmdline)>0) )
-        { 
-                hextoascii((byte *)textbuffer, cmdline, strlen(cmdline));        
-                memcpy(ccsendingbuffer, textbuffer, strlen(cmdline)/2 );
-                ccsendingbuffer[strlen(cmdline)/2] = 0x00;       
-                Serial.print("\r\nTransmitting RF packets.\r\n");
-                // blink LED RX - only for Arduino Pro Micro
-                digitalWrite(RXLED, LOW);   // set the RX LED ON
-                // send these data to radio over CC1101
-                ELECHOUSE_cc1101.SendData(ccsendingbuffer, (byte)(strlen(cmdline)/2));
-                // blink LED RX - only for Arduino Pro Micro
-                digitalWrite(RXLED, HIGH);   // set the RX LED OFF    
-                // for DEBUG only
-                asciitohex((byte *)ccsendingbuffer, (byte *)textbuffer,  strlen(cmdline)/2 );
-                Serial.print(F("Sent frame: "));
-                Serial.print((char *)textbuffer);
-                Serial.print(F("\r\n")); }
-         else { Serial.print(F("Wrong parameters.\r\n")); };
-
-
-
-    // handling RECRAW command
+     // handling RECRAW command
     } else if (strcmp_P(command, PSTR("recraw")) == 0) {
         // take interval period for samplink
         setting = atoi(cmdline);
