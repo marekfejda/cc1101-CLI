@@ -211,11 +211,10 @@ static void exec(char *cmdline)
         Serial.println(F(
           "jam : Enable or disable continous jamming on selected band.\r\n\r\n"
           "brute <microseconds> <number-of-bits> : Brute force garage gate with <nb-of-bits> keyword where symbol time is <usec>.\r\n\r\n"
-          "rec : Enable or disable recording frames in the buffer.\r\n\r\n"
           "add <hex-vals> : Manually add single frame payload (max 64 hex values) to the buffer so it can be replayed\r\n\r\n"
           "show : Show content of recording buffer\r\n\r\n"
-          "flush : Clear the recording buffer\r\n\r\n"
           "play <N> : Replay 0 = all frames or N-th recorded frame previously stored in the buffer.\r\n\r\n"
+          "flush : Clear the recording buffer\r\n\r\n"
           "rxraw <microseconds> : Sniffs radio by sampling with <microsecond> interval and prints received bytes in hex.\r\n\r\n"
           "recraw <microseconds> : Recording RAW RF data with <microsecond> sampling interval.\r\n"
             ));
@@ -686,34 +685,6 @@ static void exec(char *cmdline)
                    };
         }  
         else { Serial.print(F("Wrong parameters.\r\n")); };
-
-
-
-
-    // Handling REC command         
-    } else if (strcmp_P(command, PSTR("rec")) == 0) {
-        Serial.print(F("\r\nRecording mode set to "));
-        if (recordingmode == 1) 
-            { 
-               Serial.print(F("Disabled")); 
-               bigrecordingbufferpos = 0; 
-               recordingmode = 0;
-            }
-        else if (recordingmode == 0)
-            {  ELECHOUSE_cc1101.SetRx(); 
-               Serial.print(F("Enabled"));
-               bigrecordingbufferpos = 0;
-               // flush buffer for recording 
-               for (int i = 0; i < RECORDINGBUFFERSIZE; i++)
-                    { bigrecordingbuffer[RECORDINGBUFFERSIZE] = 0; };
-               recordingmode = 1;
-               jammingmode = 0;
-               receivingmode = 0;
-               // start counting frames in the buffer
-               framesinbigrecordingbuffer = 0;
-               };
-        Serial.print(F("\r\n")); 
-
 
     // Handling PLAY command         
        } else if (strcmp_P(command, PSTR("play")) == 0) {
