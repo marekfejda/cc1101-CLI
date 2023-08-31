@@ -22,6 +22,7 @@
 // todo
 // print out default settings on boot up
 // command to display current settings
+// merge rxraw and recraw func
 
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 #include <avr/pgmspace.h>
@@ -201,22 +202,22 @@ static void exec(char *cmdline)
           "-------------------------------------------------------COMMANDS-------------------------------------------------------\r\r"  
          ));
         Serial.println(F(
-          "jam : Enable or disable continous jamming on selected band.\r\n\r\n"
+          "jam : Enable or disable continous jamming on selected frequency.\r\n\r\n"
           "add <hex-vals> : Manually add single frame payload (max 64 hex values) to the buffer so it can be replayed\r\n\r\n"
-          "show : Show content of recording buffer\r\n\r\n"
-          "play <N> : Replay 0 = all frames or N-th recorded frame previously stored in the buffer.\r\n\r\n"
-          "flush : Clear the recording buffer\r\n\r\n"
+          "addraw <hex-vals> : Manually add chunks (max 60 hex values) to the buffer so they can be further replayed.\r\n\r\n"
           "rxraw <microseconds> : Sniffs radio by sampling with <microsecond> interval and prints received bytes in hex.\r\n\r\n"
-          "recraw <microseconds> : Recording RAW RF data with <microsecond> sampling interval.\r\n"
+          "recraw <microseconds> : Recording RAW RF data with <microsecond> sampling interval.\r\n\r\n"
+          "show : Show content of recording buffer\r\n\r\n"
+          "showraw : Showing content of recording buffer in RAW format.\r\n\r"
             ));
         Serial.println(F(
-          "addraw <hex-vals> : Manually add chunks (max 60 hex values) to the buffer so they can be further replayed.\r\n\r\n"        
-          "showraw : Showing content of recording buffer in RAW format.\r\n\r\n"
+          "play <N> : Replay 0 = all frames or N-th recorded frame previously stored in the buffer.\r\n\r\n"
           "playraw <microseconds> : Replaying previously recorded RAW RF data with <microsecond> sampling interval.\r\n\r\n"
-          "save : Store recording buffer content in non-volatile memory\r\n\r\n"
-          "load : Load the content from non-volatile memory to the recording buffer\r\n\r\n"
+          "flush : Clear the recording buffer\r\n\r\n"
+          "save : Store recording buffer content in EEPROM non-volatile memory\r\n\r\n"
+          "load : Load the content from EEPROM non-volatile memory to the recording buffer\r\n\r\n"
           "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
-          "x : Stops jamming/receiving/recording packets.\r\n\r\n"
+          "x : Immediately stops jamming/receiving/recording packets.\r\n\r\n"
           "reset : Restarts CC1101 board with default parameters\r\n\r\n"
          ));
 
