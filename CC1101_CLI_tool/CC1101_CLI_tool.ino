@@ -59,9 +59,6 @@ int jammingmode = 0;
 // check if CLI recording mode enabled
 int recordingmode = 0; 
 
-// check if CLI chat mode enabled
-int chatmode = 0; 
-
 static bool do_echo = true;
 
 // buffer for receiving  CC1101
@@ -211,7 +208,6 @@ static void exec(char *cmdline)
           "setappendstatus <mode> : When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.\r\n\r\n"
           "getrssi : Display quality information about last received frames over RF\r\n\r\n"
           "scan <start> <stop> : Scan frequency range for the highest signal.\r\n\r\n"         
-          "chat :  Enable chat mode between many devices. No exit available, disconnect device to quit\r\n"
          ));
         Serial.println(F(
           "rx : Sniffer. Enable or disable printing of received RF packets on serial terminal.\r\n\r\n"
@@ -230,13 +226,12 @@ static void exec(char *cmdline)
           "addraw <hex-vals> : Manually add chunks (max 60 hex values) to the buffer so they can be further replayed.\r\n\r\n"        
           "showraw : Showing content of recording buffer in RAW format.\r\n\r\n"
           "playraw <microseconds> : Replaying previously recorded RAW RF data with <microsecond> sampling interval.\r\n\r\n"
-          "showbit : Showing content of recording buffer in RAW format as a stream of bits.\r\n\r\n"
           "save : Store recording buffer content in non-volatile memory\r\n\r\n"
           "load : Load the content from non-volatile memory to the recording buffer\r\n\r\n"
           "eeprom-flush : Flush saved content in EEPROM non-volatile memory\r\n\r\n"
           "echo <mode> : Enable or disable Echo on serial terminal. 1 = enabled, 0 = disabled\r\n\r\n"
           "x : Stops jamming/receiving/recording packets.\r\n\r\n"
-          "init : Restarts CC1101 board with default parameters\r\n\r\n"
+          "init : Restarts CC1101 board with default parameters RENAME TO reset\r\n\r\n"
          ));
 
     // Handling SETMODULATION command 
@@ -489,20 +484,7 @@ static void exec(char *cmdline)
                  recordingmode = 0;
                };
         Serial.print(F("\r\n")); 
- 
-
-    // Handling CHAT command         
-       } else if (strcmp_P(command, PSTR("chat")) == 0) {
-        Serial.print(F("\r\nEntering chat mode:\r\n\r\n"));
-        if (chatmode == 0) 
-           { 
-             chatmode = 1;
-             jammingmode = 0;
-             receivingmode = 0;
-             recordingmode = 0;
-           };
- 
-
+        
     // Handling JAM command         
        } else if (strcmp_P(command, PSTR("jam")) == 0) {
         Serial.print(F("\r\nJamming changed to "));
@@ -734,92 +716,6 @@ static void exec(char *cmdline)
                     Serial.print((char *)textbuffer);
            }
        Serial.print(F("\r\n\r\n"));
-
-
-    // handling SHOWBIT command
-    } else if (strcmp_P(command, PSTR("showbit")) == 0) {
-    // show the content of recorded RAW signal as hex numbers
-       Serial.print(F("\r\nRecorded RAW data as bit stream:\r\n"));
-       for (int i = 0; i < RECORDINGBUFFERSIZE ; i = i + 32)  
-           {        // first convert to hex numbers
-                    asciitohex((byte *)&bigrecordingbuffer[i], (byte *)textbuffer,  32);
-                    // now decode as binary and print
-                    for (setting = 0; setting < 32 ; setting++)
-                        {
-                        setting2 = textbuffer[setting];
-                        switch( setting2 )
-                              {
-                              case '0':
-                              Serial.print(F("____"));
-                              break;
-   
-                              case '1':
-                              Serial.print(F("___-"));
-                              break;
-   
-                              case '2':
-                              Serial.print(F("__-_"));
-                              break;
-
-                              case '3':
-                              Serial.print(F("__--"));
-                              break;
-
-                              case '4':
-                              Serial.print(F("_-__"));
-                              break;
-
-                              case '5':
-                              Serial.print(F("_-_-"));
-                              break;
-
-                              case '6':
-                              Serial.print(F("_--_"));
-                              break;
-
-                              case '7':
-                              Serial.print(F("_---"));
-                              break;
-
-                              case '8':
-                              Serial.print(F("-___"));
-                              break;
-
-                              case '9':
-                              Serial.print(F("-__-"));
-                              break;
-
-                              case 'A':
-                              Serial.print(F("-_-_"));
-                              break;
-
-                              case 'B':
-                              Serial.print(F("-_--"));
-                              break;
-
-                              case 'C':
-                              Serial.print(F("--__"));
-                              break;
-
-                              case 'D':
-                              Serial.print(F("--_-"));
-                              break;
-
-                              case 'E':
-                              Serial.print(F("---_"));
-                              break;
-
-                              case 'F':
-                              Serial.print(F("----"));
-                              break;
-                              
-                              }; // end of switch
-                              
-                        }; // end of for
- 
-              } // end of for
-              Serial.print(F("\r\n\r\n"));
-
 
     // Handling ADDRAW command         
        } else if (strcmp_P(command, PSTR("addraw")) == 0) {
@@ -1169,50 +1065,8 @@ void loop() {
         static char buffer[BUF_LENGTH];
         static int length = 0;
 
-    // handling CHAT MODE     
-    if (chatmode == 1) 
-       { 
-            // blink LED RX - only for Arduino Pro Micro
-            digitalWrite(RXLED, LOW);   // set the RX LED ON
-            
-            // clear serial port buffer index
-            i = 0;
-
-            // something was received over serial port put it into radio sending buffer
-            while (Serial.available() and (i<(CCBUFFERSIZE-1)) ) 
-             {
-              // read single character from Serial port         
-              ccsendingbuffer[i] = Serial.read();
-
-              // also put it as ECHO back to serial port
-              Serial.write(ccsendingbuffer[i]);
-               
-              // if CR was received add also LF character and display it on Serial port
-              if (ccsendingbuffer[i] == 0x0d )
-                  {  
-                    Serial.write( 0x0a );
-                    i++;
-                    ccsendingbuffer[i] = 0x0a;
-                  }
-              //
-              
-              // increase CC1101 TX buffer position
-              i++;   
-             };
-
-            // put NULL at the end of CC transmission buffer
-            ccsendingbuffer[i] = '\0';
-
-            // send these data to radio over CC1101
-            ELECHOUSE_cc1101.SendData(ccsendingbuffer);
-
-            // blink LED RX - only for Arduino Pro Micro
-            digitalWrite(RXLED, HIGH);   // set the RX LED OFF
-                
-       }
-    // handling CLI commands processing
-    else
-      {   
+    
+    // handling CLI commands processing  
         int data = Serial.read();
         if (data == '\b' || data == '\177') {  // BS and DEL
             if (length) {
@@ -1232,13 +1086,11 @@ void loop() {
         }
        };  
       // end of handling CLI processing
-        
-    };
 
   /* Process RF received packets */
    
    //Checks whether something has been received.
-  if (ELECHOUSE_cc1101.CheckReceiveFlag() && (receivingmode == 1 || recordingmode == 1 || chatmode == 1) )
+  if (ELECHOUSE_cc1101.CheckReceiveFlag() && (receivingmode == 1 || recordingmode == 1) )
       {
        // blink LED RX - only for Arduino Pro Micro
        digitalWrite(RXLED, LOW);   // set the RX LED ON
@@ -1248,15 +1100,6 @@ void loop() {
           { 
             //Get received Data and calculate length
             int len = ELECHOUSE_cc1101.ReceiveData(ccreceivingbuffer);
-
-            // Actions for CHAT MODE
-            if ( ( chatmode == 1) && (len < CCBUFFERSIZE ) )
-               {
-                // put NULL at the end of char buffer
-                ccreceivingbuffer[len] = '\0';
-                //Print received in char format.
-                Serial.print((char *) ccreceivingbuffer);
-               };  // end of handling Chat mode
 
             // Actions for RECEIVNG MODE
             if ( ((receivingmode == 1) && (recordingmode == 0))&& (len < CCBUFFERSIZE ) )
