@@ -19,6 +19,10 @@
 //  d14         -----    7 MISO/GDO1
 //  d9          -----    8 GDO2/DGO2
 
+// todo
+// print out default settings on boot up
+// command to display current settings
+
 #include <ELECHOUSE_CC1101_SRC_DRV.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
